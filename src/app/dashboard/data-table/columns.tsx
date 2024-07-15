@@ -1,7 +1,7 @@
 "use client"
 import { Badge } from "@/components/ui/badge";
 import { Payment } from "@/data/payments.data";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, SortDirection } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -11,17 +11,47 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { ArrowDownIcon, ChevronDownIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
+
+const SortedIcon = ({ isSorted }: { isSorted: false | SortDirection }) => {
+    if (isSorted === "asc") {
+        return <ChevronDownIcon className="h-4 w-4 m-2 rotate-180" />;
+    }
+    if (isSorted === "desc") {
+        return <ChevronDownIcon className="h4 w-4 m-2" />
+    }
+    return null;
+}
 
 export const columns: ColumnDef<Payment>[] = [
     {
         accessorKey: "clientName",
-        header: "Client Name",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Client
+                    <SortedIcon isSorted={column.getIsSorted()} />
+                </Button>
+            )
+        },
     },
     {
         accessorKey: "status",
-        header: "Status",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Status
+                    <SortedIcon isSorted={column.getIsSorted()} />
+                </Button>
+            )
+        },
         cell: ({ row }) => {
             const status = row.getValue("status") as string;
             const variant = {
@@ -36,7 +66,19 @@ export const columns: ColumnDef<Payment>[] = [
     },
     {
         accessorKey: "amount",
-        header: () => <div className="text-right">Amount</div>,
+        header: ({ column }) => {
+            return (
+                <div className="text-right">
+                    <Button
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        Amount
+                        <SortedIcon isSorted={column.getIsSorted()} />
+                    </Button>
+                </div>
+            )
+        },
         cell: ({ row }) => {
             const amount = parseFloat(row.getValue("amount"))
             const formatted = new Intl.NumberFormat("en-US", {
@@ -48,7 +90,17 @@ export const columns: ColumnDef<Payment>[] = [
     },
     {
         accessorKey: "email",
-        header: "Email",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Email
+                    <SortedIcon isSorted={column.getIsSorted()} />
+                </Button>
+            )
+        },
     },
     {
         id: "actions",
@@ -68,8 +120,8 @@ export const columns: ColumnDef<Payment>[] = [
                         <DropdownMenuItem
                             onClick={() => {
                                 navigator.clipboard.writeText(payment.id);
-                                toast("Payment ID copied to clipboard",{
-                                    position:"top-right",
+                                toast("Payment ID copied to clipboard", {
+                                    position: "top-right",
                                 });
                             }
                             }
