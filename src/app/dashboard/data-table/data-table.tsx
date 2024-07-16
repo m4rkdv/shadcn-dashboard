@@ -4,11 +4,22 @@ import {
     ColumnDef,
     SortingState,
     flexRender,
+    ColumnFiltersState,
     getCoreRowModel,
+    getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 import {
     Table,
@@ -19,7 +30,10 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
+
+
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -31,6 +45,8 @@ export function DataTable<TData, TValue>({
     data,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [currentStatus, setcurrentStatus] = useState("all")
     const table = useReactTable({
         data,
         columns,
@@ -38,13 +54,53 @@ export function DataTable<TData, TValue>({
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
+        onColumnFiltersChange: setColumnFilters,
+        getFilteredRowModel: getFilteredRowModel(),
         state: {
-          sorting,
+            sorting,
+            columnFilters,
         },
     })
 
     return (
         <div>
+            <div className="flex items-center justify-between py-4">
+                <Input
+                    placeholder="Filter emails..."
+                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("email")?.setFilterValue(event.target.value)
+                    }
+                    className="max-w-sm"
+                />
+
+                <Select
+                    value={currentStatus}
+                    onValueChange={(value) => {
+                        if (value === "all"){
+                            table.getColumn("status")?.setFilterValue(undefined);
+                            setcurrentStatus("all");
+                            return;
+                        }
+                        setcurrentStatus(value);
+                        table.getColumn("status")?.setFilterValue(value);
+                    }}
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Status - All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="success">Success</SelectItem>
+                            <SelectItem value="failed">Failed</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
